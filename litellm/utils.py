@@ -4020,11 +4020,6 @@ def get_optional_params(  # noqa: PLR0915
     safety_identifier: Optional[str] = None,
     **kwargs,
 ):
-    # Function-scoped to avoid a circular import: secret_managers.main pulls in
-    # `litellm`, which can be mid-loading utils at module-import time. By the
-    # time this function runs all modules are fully initialized.
-    from litellm.secret_managers.main import get_secret
-
     passed_params = locals().copy()
     special_params = passed_params.pop("kwargs")
     provider_config: Optional[BaseConfig] = None
@@ -4729,15 +4724,28 @@ def get_optional_params(  # noqa: PLR0915
                 ),
             )
         else:
+            # Scoped import: secret_managers.main pulls in `litellm`, which
+            # is mid-loading utils at module-import time (circular). Importing
+            # here defers the load until first call, when both modules are
+            # fully initialized. This branch is also the only place
+            # get_optional_params reaches `get_secret` as a bare name, since
+            # the older lazy-__getattr__ fallback only resolves attribute
+            # access (e.g. litellm.utils.get_secret), not LOAD_GLOBAL.
+            from litellm.secret_managers.main import (
+                get_secret as _get_azure_secret,
+            )
+
             verbose_logger.debug(
                 "Azure optional params - api_version: api_version={}, litellm.api_version={}, os.environ['AZURE_API_VERSION']={}".format(
-                    api_version, litellm.api_version, get_secret("AZURE_API_VERSION")
+                    api_version,
+                    litellm.api_version,
+                    _get_azure_secret("AZURE_API_VERSION"),
                 )
             )
             api_version = (
                 api_version
                 or litellm.api_version
-                or get_secret("AZURE_API_VERSION")
+                or _get_azure_secret("AZURE_API_VERSION")
                 or litellm.AZURE_DEFAULT_API_VERSION
             )
             optional_params = litellm.AzureOpenAIConfig().map_openai_params(
