@@ -16,15 +16,15 @@ Common naming + label helpers shared by gateway, backend, and ui templates.
 {{- end -}}
 
 {{- define "litellm.gateway.fullname" -}}
-{{- printf "%s-gateway" (include "litellm.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-gateway" (include "litellm.fullname" . | trunc 55 | trimSuffix "-") | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "litellm.backend.fullname" -}}
-{{- printf "%s-backend" (include "litellm.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-backend" (include "litellm.fullname" . | trunc 55 | trimSuffix "-") | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "litellm.ui.fullname" -}}
-{{- printf "%s-ui" (include "litellm.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-ui" (include "litellm.fullname" . | trunc 60 | trimSuffix "-") | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "litellm.commonLabels" -}}

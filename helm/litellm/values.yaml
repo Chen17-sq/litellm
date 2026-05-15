@@ -79,7 +79,7 @@ database:
     schema: ""
     useIAMAuth: false
     passwordSecret:
-      name: litellm-reader-secret
+      name: ""
       usernameKey: username
       passwordKey: password
 
