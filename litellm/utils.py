@@ -390,14 +390,6 @@ from litellm.llms.base_llm.evals.transformation import BaseEvalsAPIConfig
 from litellm.llms.base_llm.responses.transformation import BaseResponsesAPIConfig
 from litellm.llms.base_llm.skills.transformation import BaseSkillsAPIConfig
 
-# `get_secret` is referenced as a bare name in this module (e.g. in
-# get_optional_params, get_llm_provider). The TYPE_CHECKING-only stub at the
-# top of the file is enough for mypy but leaves it undefined at runtime, and
-# Python's module `__getattr__` lazy-import fallback does not cover bare-name
-# global lookups inside functions in all paths. Import it at module scope so
-# every call site resolves.
-from litellm.secret_managers.main import get_secret
-
 from ._logging import _is_debugging_on, verbose_logger
 from .caching.caching import (
     AzureBlobCache,
@@ -4028,6 +4020,11 @@ def get_optional_params(  # noqa: PLR0915
     safety_identifier: Optional[str] = None,
     **kwargs,
 ):
+    # Function-scoped to avoid a circular import: secret_managers.main pulls in
+    # `litellm`, which can be mid-loading utils at module-import time. By the
+    # time this function runs all modules are fully initialized.
+    from litellm.secret_managers.main import get_secret
+
     passed_params = locals().copy()
     special_params = passed_params.pop("kwargs")
     provider_config: Optional[BaseConfig] = None
